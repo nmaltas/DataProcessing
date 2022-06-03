@@ -10,7 +10,7 @@ class Interface:
         self.default_font.configure(size=16, family = "Comic Sans MS")
          
         #Default LineSize
-        self.LineSize = 300   #Optimal = 300
+        self.LineSize = 313   #Optimal = 313
         
         #Variable for the checkbox
         self.CheckMe = IntVar()
@@ -40,7 +40,7 @@ class Interface:
         self.LineSizeInput.place( x = 380, y = 250, height = 21)
         self.LineSizeInput.insert(END, str(self.LineSize))
         
-        #Checkboz for GlobalMode
+        #Checkbox for GlobalMode
         self.CheckAll = Checkbutton(variable=self.CheckMe, onvalue=1, offvalue=0, command=self.ToggleCheckbox, fg = "black", bg = "#1C286C",  activebackground = "#1C286C", activeforeground="white", selectcolor = "#FF8040")
         self.CheckAll.place(x = 290, y  = 140)
         self.CheckAllLabel = Label(text='Do for all files in directory', fg = "white", bg = "#1C286C")
@@ -109,8 +109,8 @@ class Interface:
         #Check and handle file I/O parameters
         
         #Set the file handles
-        RawText = open(FileI, encoding = "UTF-8", mode = 'r')           #UTF-8 encoding so that other languages than english can be read
-        Output = open(FileO, encoding = "UTF-8", mode = 'w')
+        RawText = open(FileI, 'r')
+        Output = open(FileO, 'w')
 
         #Algorithm starts here
         Counter  = 0
@@ -181,7 +181,7 @@ class Interface:
         return CheckPoint
 
 App=Tk()
-Mpougiounti= Interface(App)
+Mpougiountri= Interface(App)
 App.configure( bg = "#1C286C")
 App.title('TextLinesFix')
 App.geometry("800x500+500+200")
