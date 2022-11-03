@@ -9,11 +9,14 @@ import datetime
 
 class Interface:
     def __init__(self, win):
+
+        self.default_font = tkFont.nametofont("TkDefaultFont")
+        self.default_font.configure(size=16, family="Comic Sans MS")
+
+        # Obtain current date and format it
         self.TodayIs = datetime.datetime.now()
         self.UpDate = str(self.TodayIs.month) + "/" + \
             str(self.TodayIs.day) + "/" + str(self.TodayIs.year)
-        self.default_font = tkFont.nametofont("TkDefaultFont")
-        self.default_font.configure(size=16, family="Comic Sans MS")
 
         # Set the path for the root directory
         self.RootDirPath = 'M:/Testprog/BOEING'
@@ -23,7 +26,7 @@ class Interface:
         self.RootPathEntry.insert(END, self.RootDirPath)
         self.RootPathEntry.place(x=75, y=18)
 
-        # global Option
+        # Set the date
         self.DateLabel1 = Label(text="Date:", fg="#FF6600", bg="#244420")
         self.DateLabel1.place(x=5, y=45)
         self.DateLabel2 = Label(text="Format: MM/DD/YYYY",
@@ -40,7 +43,7 @@ class Interface:
 
     def Run(self):
 
-        # Obtain Parameters
+        # Prepare Parameters
         RootDir = self.RootPathEntry.get()
         RootDir = RootDir.replace("\\", "/")
         NewDate = "CalDate = " + self.DateEntry.get()
@@ -49,11 +52,13 @@ class Interface:
         Subfolders = [x[0] for x in os.walk(RootDir)]
 
         for Path in Subfolders:
-
             Files = [f.path for f in os.scandir(Path) if (not f.is_dir())]
-            for Winner in Files:
 
+            # Search each subfolder for .INI files
+            for Winner in Files:
                 if (Winner[len(Winner) - 3:] == "INI"):
+
+                    # Apply changes if applicable
                     for Line in fileinput.input(Winner, inplace=True):
                         if "CalDate" in Line:
                             print(Line.replace(Line, NewDate))
