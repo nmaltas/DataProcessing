@@ -8,15 +8,16 @@ x0 = []
 y0 = []
 
 
-################## 0000 ############################
+################## DATA 1 ############################
 Data = open("Data.txt", "r")
 Mpougiournti = Data.readlines()
+Data.close()
 for Line in Mpougiournti[1:]:
     Kolokythia = Line.strip().split(',')
     x0.append(float(Kolokythia[0]))
     y0.append(float(Kolokythia[1]))
     
-Data.close()
+
 
 plt.plot(x0, y0, label="Data", color = "green")
 ####################################################
