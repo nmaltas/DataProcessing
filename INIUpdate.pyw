@@ -8,13 +8,13 @@ import datetime
 
 
 class Interface:
-    def __init__(self, win)
+    def __init__(self, win):
 
         self.default_font = tkFont.nametofont("TkDefaultFont")
         self.default_font.configure(size=16, family="Comic Sans MS")
 
         # Set the path for the root directory
-        #self.RootDirPath = r"'M:\Testprog\BOEING"
+        #self.RootDirPath = r"'INSERT PATH"
         self.RootDirPath = r"Insert Path"
         self.RootPathLabel = Label(text="Root:", fg="#FF6600", bg="#244420")
         self.RootPathLabel.place(x=5, y=10)
@@ -93,7 +93,7 @@ class Interface:
     def ReplaceSequence(self, Winner, VariableToBeChanged, NewLine):    # Function for changing a specific character sequence in the file
         for Line in fileinput.input(Winner, inplace=True):
             if VariableToBeChanged in Line:
-                print(Line.replace(Line, NewLine)).0
+                print(Line.replace(Line, NewLine))
                 #sys.stderr.write(Winner + "\n")
                 #sys.stderr.write(Line + "\n")
             else:

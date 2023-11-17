@@ -19,7 +19,7 @@ class Interface:
             str(self.TodayIs.day) + "/" + str(self.TodayIs.year)
 
         # Set the path for the root directory
-        self.RootDirPath = 'M:/Testprog/BOEING'
+        self.RootDirPath = 'INSERT PATH'
         self.RootPathLabel = Label(text="Root:", fg="#FF6600", bg="#244420")
         self.RootPathLabel.place(x=5, y=10)
         self.RootPathEntry = Entry(width=60, bg="#FF6600")
