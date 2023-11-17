@@ -1,6 +1,6 @@
 # DataProcessing
 
-Various handy scripts for quickly processing data for various purposes and projects.
+Various handy scripts for quickly processing data for various purposes and personal projects.
 
 PlotData:
 ---------
