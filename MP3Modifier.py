@@ -1,5 +1,5 @@
-from mutagen.id3 import ID3
 import os
+from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1
 
 
 # Cheatsheet :
@@ -16,25 +16,31 @@ import os
 # APIC   = Attached picture (album art)
 
 
-Path = "C:\\Users\\nmaltas\\Documents\\Temp\\Testbench\\BowlingForSoup\\"
-FileName = "Cosmic"  # "Bowling For Soup - Alexa Bliss.mp3"
-Mpougiournti = Path + FileName
+# Path = "C:\\Users\\nmaltas\\Documents\\Temp\\Testbench\\BowlingForSoup\\"
+Path = os.path.dirname(__file__)
+FileList = [f for f in os.listdir() if (f.lower().endswith(".mp3") and os.path.isfile(f))]
 
-try:
-    Kolokythi = ID3(Mpougiournti)
-except:
-    print(f"No ID3v2 tag found in '{Mpougiournti}'")
-    Kolokythi = None
+print(FileList)
 
-print(Path)
-Title = Kolokythi.get("TIT2")
-Artist = Kolokythi.get("TPE1")
+for File in FileList:
 
-Title = "Title : " + Title[0].strip()
-Artist = "Artist : " + Artist[0].strip()
+    try:
+        Artist, Title = File.split(" - ", 1)
 
-print(Title)
-print(Artist)
+    except Exception as CantSplit:
+        continue
 
+    try:
+        Kolokythi = ID3(File)
+
+    except ID3NoHeaderError:
+        print(f"No ID3v2 tag found in '{File}'")
+        Kolokythi = ID3()
+
+    Kolokythi["TIT2"] = TIT2(encoding=3, text=Title)
+    Kolokythi["TPE1"] = TPE1(encoding=3, text=Artist)
+    Kolokythi.save(os.path.join(Path, File), v2_version=3)
+
+    os.rename(File, Title)
 
 print("Hey!!")
