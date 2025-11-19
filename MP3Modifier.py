@@ -5,6 +5,7 @@ import sys
 import fileinput
 import os
 from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1
+from collections import deque
 
 # Cheatsheet :
 # TIT2   = Title
@@ -32,6 +33,11 @@ class MP3Modifier(tk.Frame):
 
         self.CreateWidgets()
         self.pack(fill="both", expand=True)
+
+        # Path = "C:\\Users\\nmaltas\\Documents\\Temp\\Testbench\\BowlingForSoup\\"
+        self.Path = os.path.dirname(__file__)
+        self.ItemStorage = deque()
+        self.ItemStorage.extend(self.GetFiles(self.Path))
 
     def CreateWidgets(self):
 
@@ -69,15 +75,18 @@ class MP3Modifier(tk.Frame):
         self.NewFileNameEntry.grid(row=6, column=3)
 
         # Execute button
-        self.DoneButton = tk.Button(self, text="Done. Load next.", bg="#FF6600", activebackground="#FF8040")
+        self.DoneButton = tk.Button(self, text="Done. Load next.", command=self.LoadNext, bg="#FF6600", activebackground="#FF8040")
         self.DoneButton.grid(row=7, column=3)
 
+    def GetFiles(self, Path):
+        FileList = [f for f in os.listdir() if (f.lower().endswith(".mp3") and os.path.isfile(f))]
+        print(FileList)
+        return FileList
 
-# Path = "C:\\Users\\nmaltas\\Documents\\Temp\\Testbench\\BowlingForSoup\\"
-# Path = os.path.dirname(__file__)
-# FileList = [f for f in os.listdir() if (f.lower().endswith(".mp3") and os.path.isfile(f))]
+    def LoadNext(self):
+        print(self.ItemStorage.popleft())
+        # guard against empty!!
 
-# print(FileList)
 
 # for File in FileList:
 
