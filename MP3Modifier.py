@@ -4,7 +4,7 @@ import glob
 import sys
 import fileinput
 import os
-from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1
+from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TPE1, TPE2
 from collections import deque
 
 # Cheatsheet :
@@ -21,6 +21,8 @@ from collections import deque
 # APIC   = Attached picture (album art)
 
 
+###########################################################################################
+###########################################################################################
 class MP3Modifier(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -34,11 +36,14 @@ class MP3Modifier(tk.Frame):
         self.CreateWidgets()
         self.pack(fill="both", expand=True)
 
-        # Path = "C:\\Users\\nmaltas\\Documents\\Temp\\Testbench\\BowlingForSoup\\"
         self.Path = os.path.dirname(__file__)
         self.ItemStorage = deque()
-        self.ItemStorage.extend(self.GetFiles(self.Path))
+        self.ItemStorage.extend(self.GetFiles())
+        self.FileInFocus = None
+        self.Title0 = None
+        self.Artist0 = None
 
+    ###########################################################################################
     def CreateWidgets(self):
 
         # Setting background color
@@ -46,10 +51,10 @@ class MP3Modifier(tk.Frame):
         self.configure(bg=BackgroundColor)
 
         # File name entry field and label
-        self.FileNameLabel = tk.Label(self, text="File name: ", fg="#FF6600", bg=BackgroundColor)
-        self.FileNameLabel.grid(row=0, column=3)
-        self.FileNameEntry = tk.Entry(self, width=50)
-        self.FileNameEntry.grid(row=1, column=3)
+        self.FileNameLabel1 = tk.Label(self, text="File name: ", fg="#FF6600", bg=BackgroundColor)
+        self.FileNameLabel1.grid(row=0, column=3)
+        self.FileNameLabel2 = tk.Label(self, text="", fg="#FF6600", bg=BackgroundColor)
+        self.FileNameLabel2.grid(row=1, column=3)
 
         # Metadata control fields
         # Title
@@ -75,39 +80,103 @@ class MP3Modifier(tk.Frame):
         self.NewFileNameEntry.grid(row=6, column=3)
 
         # Execute button
-        self.DoneButton = tk.Button(self, text="Done. Load next.", command=self.LoadNext, bg="#FF6600", activebackground="#FF8040")
-        self.DoneButton.grid(row=7, column=3)
+        self.RunButton = tk.Button(self, text="Load", command=self.Run, bg="#FF6600", activebackground="#FF8040")
+        self.RunButton.grid(row=7, column=3)
 
-    def GetFiles(self, Path):
+    ###########################################################################################
+    def GetFiles(self):
         FileList = [f for f in os.listdir() if (f.lower().endswith(".mp3") and os.path.isfile(f))]
         print(FileList)
         return FileList
 
+    ###########################################################################################
     def LoadNext(self):
-        print(self.ItemStorage.popleft())
-        # guard against empty!!
+        if len(self.ItemStorage) > 0:
+            return self.ItemStorage.popleft()
+        else:
+            return "Done!"
+
+    ###########################################################################################
+    def UnpackFile(self, FileName):
+        with open(FileName, "r") as File:
+            try:
+                self.Artist0, self.Title0 = FileName.split(" - ", 1)
+
+            except Exception as CantSplit:
+                self.Title0 = FileName
+
+            try:
+                self.FileInFocus = ID3(FileName)
+                ValidMetadata = True
+
+            except ID3NoHeaderError:
+                print(f"No ID3v2 tag found in '{FileName}'")
+                self.FileInFocus = ID3()
+                ValidMetadata = False
+
+            self.FileNameLabel2.config(text=FileName)
+
+        if ValidMetadata:
+
+            # bug here. IF a tag gets loaded in a (local, no need to make it accessible to the entire class) variable, then do:
+            self.TitleEntry.insert(0, self.FileInFocus.get("TIT2"))
+            self.Artist1Entry.insert(0, self.FileInFocus.get("TPE1"))
+            self.Artist2Entry.insert(0, self.FileInFocus.get("TPE2"))
+
+            self.NewFileNameEntry.insert(0, self.FileInFocus.get("TIT2") + ".mp3")
+
+        else:
+            self.TitleEntry.insert(0, self.Title0[:-4])
+            self.Artist1Entry.insert(0, self.Artist0)
+            self.Artist2Entry.insert(0, "")
+
+            self.NewFileNameEntry.insert(0, self.Title0)
+
+    ###########################################################################################
+    def ModifyFile(self, FileName):
+        Title = self.TitleEntry.get()
+        self.FileInFocus["TIT2"] = TIT2(encoding=3, text=Title)
+        self.FileInFocus["TPE1"] = TPE1(encoding=3, text=self.Artist1Entry.get())
+
+        Artist2 = self.Artist2Entry.get()
+
+        if Artist2 != "":
+            self.FileInFocus["TPE2"] = TPE2(encoding=3, text=Artist2)
+
+        self.FileInFocus.save(os.path.join(self.Path, FileName), v2_version=3)
+
+        os.rename(FileName, Title)
+
+    ###########################################################################################
+    def Run(self):
+
+        # Check for empty or done before editing file
+        Current = self.FileNameLabel2.cget("text")
+
+        if Current == "Done":
+            return
+        elif Current == "":
+            self.RunButton.config(text="Done. Load next.")
+        else:
+            self.ModifyFile(Current)
+
+        Next = self.LoadNext()
+
+        if Next == "Done":
+            self.FileNameLabel2.config(text=Next)
+            self.TitleEntry.insert(0, "")
+            self.Artist1Entry.insert(0, "")
+            self.Artist2Entry.insert(0, "")
+            self.NewFileNameEntry.insert(0, "")
+            return
+
+        else:
+            self.UnpackFile(Next)
 
 
-# for File in FileList:
-
-#     try:
-#         Artist, Title = File.split(" - ", 1)
-
-#     except Exception as CantSplit:
-#         continue
-
-#     try:
-#         Kolokythi = ID3(File)
-
-#     except ID3NoHeaderError:
-#         print(f"No ID3v2 tag found in '{File}'")
-#         Kolokythi = ID3()
-
-#     Kolokythi["TIT2"] = TIT2(encoding=3, text=Title)
-#     Kolokythi["TPE1"] = TPE1(encoding=3, text=Artist)
-#     Kolokythi.save(os.path.join(Path, File), v2_version=3)
-
-#     os.rename(File, Title)
+###########################################################################################
+###########################################################################################
+###########################################################################################
 
 root = tk.Tk()
 Mpifteki = MP3Modifier(root)
