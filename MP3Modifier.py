@@ -91,6 +91,7 @@ class MP3Modifier(tk.Frame):
 
     ###########################################################################################
     def LoadNext(self):
+        print(len(self.ItemStorage))
         if len(self.ItemStorage) > 0:
             return self.ItemStorage.popleft()
         else:
@@ -98,6 +99,12 @@ class MP3Modifier(tk.Frame):
 
     ###########################################################################################
     def UnpackFile(self, FileName):
+
+        self.TitleEntry.delete(0, tk.END)
+        self.Artist1Entry.delete(0, tk.END)
+        self.Artist2Entry.delete(0, tk.END)
+        self.NewFileNameEntry.delete(0, tk.END)
+
         with open(FileName, "r") as File:
             try:
                 self.Artist0, self.Title0 = FileName.split(" - ", 1)
@@ -135,17 +142,20 @@ class MP3Modifier(tk.Frame):
     ###########################################################################################
     def ModifyFile(self, FileName):
         Title = self.TitleEntry.get()
-        self.FileInFocus["TIT2"] = TIT2(encoding=3, text=Title)
-        self.FileInFocus["TPE1"] = TPE1(encoding=3, text=self.Artist1Entry.get())
+        if Title != "":
+            self.FileInFocus["TIT2"] = TIT2(encoding=3, text=Title)
+
+        Artist1 = self.Artist1Entry.get()
+        if Artist1 != "":
+            self.FileInFocus["TPE1"] = TPE1(encoding=3, text=self.Artist1Entry.get())
 
         Artist2 = self.Artist2Entry.get()
-
         if Artist2 != "":
             self.FileInFocus["TPE2"] = TPE2(encoding=3, text=Artist2)
 
         self.FileInFocus.save(os.path.join(self.Path, FileName), v2_version=3)
 
-        os.rename(FileName, Title)
+        os.rename(FileName, self.NewFileNameEntry.get())
 
     ###########################################################################################
     def Run(self):
