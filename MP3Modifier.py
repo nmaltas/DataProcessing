@@ -53,24 +53,24 @@ class MP3Modifier(tk.Frame):
         # File name entry field and label
         self.FileNameLabel1 = tk.Label(self, text="File name: ", fg="#FF6600", bg=BackgroundColor)
         self.FileNameLabel1.grid(row=0, column=3)
-        self.FileNameLabel2 = tk.Label(self, text="", fg="#FF6600", bg=BackgroundColor)
-        self.FileNameLabel2.grid(row=1, column=3)
+        self.FileNameEntry = tk.Entry(self, width=50, state="readonly")
+        self.FileNameEntry.grid(row=1, column=3)
 
         # Metadata control fields
         # Title
         self.TitleLabel = tk.Label(self, text="Title: ", fg="#FF6600", bg=BackgroundColor)
         self.TitleLabel.grid(row=2, column=0)
-        self.TitleEntry = tk.Entry(self, width=25)
+        self.TitleEntry = tk.Entry(self, width=30)
         self.TitleEntry.grid(row=3, column=0)
         # Artist 1
         self.Artist1Label = tk.Label(self, text="Artist 1: ", fg="#FF6600", bg=BackgroundColor)
         self.Artist1Label.grid(row=2, column=3)
-        self.Artist1Entry = tk.Entry(self, width=25)
+        self.Artist1Entry = tk.Entry(self, width=30)
         self.Artist1Entry.grid(row=3, column=3)
         # Artist 2
         self.Artist2Label = tk.Label(self, text="Artist 2: ", fg="#FF6600", bg=BackgroundColor)
         self.Artist2Label.grid(row=2, column=5)
-        self.Artist2Entry = tk.Entry(self, width=25)
+        self.Artist2Entry = tk.Entry(self, width=30)
         self.Artist2Entry.grid(row=3, column=5)
 
         # File name entry field and label
@@ -80,8 +80,23 @@ class MP3Modifier(tk.Frame):
         self.NewFileNameEntry.grid(row=6, column=3)
 
         # Execute button
-        self.RunButton = tk.Button(self, text="Load", command=self.Run, bg="#FF6600", activebackground="#FF8040")
+        self.RunButton = tk.Button(self, text="Load", command=self.Main, bg="#FF6600", activebackground="#FF8040")
         self.RunButton.grid(row=7, column=3)
+
+        # Skip button
+        self.SkipButton = tk.Button(self, text="Skip", command=self.Skip, bg="#FF6600", activebackground="#FF8040")
+        self.SkipButton.grid(row=7, column=2, sticky="e")
+
+        # Swap data button
+        self.SwapButton = tk.Button(self, text="\U0001f504", command=self.SwapData, bg="#FF6600", activebackground="#FF8040")
+        self.SwapButton.grid(row=3, column=2, sticky="e", padx=50)
+
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
+        self.columnconfigure(4, weight=1)
+        self.columnconfigure(5, weight=1)
 
     ###########################################################################################
     def GetFiles(self):
@@ -100,16 +115,21 @@ class MP3Modifier(tk.Frame):
     ###########################################################################################
     def UnpackFile(self, FileName):
 
+        Splitter = " - "
+
+        self.FileNameEntry.config(state="normal")
+        self.FileNameEntry.delete(0, tk.END)
+        self.FileNameEntry.config(state="readonly")
         self.TitleEntry.delete(0, tk.END)
         self.Artist1Entry.delete(0, tk.END)
         self.Artist2Entry.delete(0, tk.END)
         self.NewFileNameEntry.delete(0, tk.END)
 
         with open(FileName, "r") as File:
-            try:
-                self.Artist0, self.Title0 = FileName.split(" - ", 1)
 
-            except Exception as CantSplit:
+            if Splitter in FileName:
+                self.Artist0, self.Title0 = FileName.split(Splitter, 1)
+            else:
                 self.Title0 = FileName
 
             try:
@@ -121,22 +141,25 @@ class MP3Modifier(tk.Frame):
                 self.FileInFocus = ID3()
                 ValidMetadata = False
 
-            self.FileNameLabel2.config(text=FileName)
+            self.FileNameEntry.config(state="normal")
+            self.FileNameEntry.insert(0, FileName)
+            self.FileNameEntry.config(state="readonly")
 
         if ValidMetadata:
 
-            # bug here. IF a tag gets loaded in a (local, no need to make it accessible to the entire class) variable, then do:
-            self.TitleEntry.insert(0, self.FileInFocus.get("TIT2"))
-            self.Artist1Entry.insert(0, self.FileInFocus.get("TPE1"))
-            self.Artist2Entry.insert(0, self.FileInFocus.get("TPE2"))
-
-            self.NewFileNameEntry.insert(0, self.FileInFocus.get("TIT2") + ".mp3")
+            if self.FileInFocus.get("TIT2") != None:
+                self.TitleEntry.insert(0, self.FileInFocus.get("TIT2"))
+                self.NewFileNameEntry.insert(0, self.FileInFocus.get("TIT2"))
+                self.NewFileNameEntry.insert(tk.END, ".mp3")
+            if self.FileInFocus.get("TPE1") != None:
+                self.Artist1Entry.insert(0, self.FileInFocus.get("TPE1"))
+            if self.FileInFocus.get("TPE2") != None:
+                self.Artist2Entry.insert(0, self.FileInFocus.get("TPE2"))
 
         else:
             self.TitleEntry.insert(0, self.Title0[:-4])
             self.Artist1Entry.insert(0, self.Artist0)
             self.Artist2Entry.insert(0, "")
-
             self.NewFileNameEntry.insert(0, self.Title0)
 
     ###########################################################################################
@@ -147,7 +170,7 @@ class MP3Modifier(tk.Frame):
 
         Artist1 = self.Artist1Entry.get()
         if Artist1 != "":
-            self.FileInFocus["TPE1"] = TPE1(encoding=3, text=self.Artist1Entry.get())
+            self.FileInFocus["TPE1"] = TPE1(encoding=3, text=Artist1)
 
         Artist2 = self.Artist2Entry.get()
         if Artist2 != "":
@@ -158,12 +181,12 @@ class MP3Modifier(tk.Frame):
         os.rename(FileName, self.NewFileNameEntry.get())
 
     ###########################################################################################
-    def Run(self):
+    def Main(self):
 
         # Check for empty or done before editing file
-        Current = self.FileNameLabel2.cget("text")
+        Current = self.FileNameEntry.get()
 
-        if Current == "Done":
+        if Current == "Done!":
             return
         elif Current == "":
             self.RunButton.config(text="Done. Load next.")
@@ -172,12 +195,47 @@ class MP3Modifier(tk.Frame):
 
         Next = self.LoadNext()
 
-        if Next == "Done":
-            self.FileNameLabel2.config(text=Next)
+        if Next == "Done!":
+            self.FileNameEntry.config(state="normal")
+            self.FileNameEntry.delete(0, tk.END)
+            self.FileNameEntry.insert(0, Next)
+            self.FileNameEntry.config(state="readonly")
             self.TitleEntry.insert(0, "")
             self.Artist1Entry.insert(0, "")
             self.Artist2Entry.insert(0, "")
             self.NewFileNameEntry.insert(0, "")
+            return
+
+        else:
+            self.UnpackFile(Next)
+
+    ###########################################################################################
+    def SwapData(self):
+        Temp = self.TitleEntry.get()
+        self.TitleEntry.delete(0, tk.END)
+        self.TitleEntry.insert(0, self.Artist1Entry.get())
+        self.Artist1Entry.delete(0, tk.END)
+        self.Artist1Entry.insert(0, Temp)
+
+    ###########################################################################################
+    def Skip(self):
+        # Check for empty or done before editing file
+        Current = self.FileNameEntry.get()
+
+        if Current == "Done!" or Current == "":
+            return
+
+        Next = self.LoadNext()
+
+        if Next == "Done!":
+            self.FileNameEntry.config(state="normal")
+            self.FileNameEntry.delete(0, tk.END)
+            self.FileNameEntry.insert(0, Next)
+            self.FileNameEntry.config(state="readonly")
+            self.TitleEntry.delete(0, tk.END)
+            self.Artist1Entry.delete(0, tk.END)
+            self.Artist2Entry.delete(0, tk.END)
+            self.NewFileNameEntry.delete(0, tk.END)
             return
 
         else:
@@ -191,7 +249,7 @@ class MP3Modifier(tk.Frame):
 root = tk.Tk()
 Mpifteki = MP3Modifier(root)
 root.title("MP3Modifier")
-root.geometry("800x300+100+200")
+root.geometry("900x400+100+200")
 
 root.mainloop()
 
