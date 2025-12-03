@@ -18,6 +18,10 @@ DateUpdate:
 --------------
 Script with its own GUI intentionally specialized to parse through data files and change a specific date parameter while leaving everything else in the files unaffected.
 
+MP3Modifier:
+--------------
+Custom script to load .mp3 files in the immediate directory one by one, allowing the user to access and modify their metadata.
+
 GetData:
 --------------
 Script with its own basic GUI intended to automate the process of ssh in a remote linux system, find data and create local copies in a windows system.
