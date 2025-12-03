@@ -165,15 +165,21 @@ class MP3Modifier(tk.Frame):
     ###########################################################################################
     def ModifyFile(self, FileName):
         Title = self.TitleEntry.get()
-        if Title != "":
+        if Title == "-":
+            del self.FileInFocus["TIT2"]
+        elif Title != "":
             self.FileInFocus["TIT2"] = TIT2(encoding=3, text=Title)
 
         Artist1 = self.Artist1Entry.get()
-        if Artist1 != "":
+        if Artist1 == "-":
+            del self.FileInFocus["TPE1"]
+        elif Artist1 != "":
             self.FileInFocus["TPE1"] = TPE1(encoding=3, text=Artist1)
 
         Artist2 = self.Artist2Entry.get()
-        if Artist2 != "":
+        if Artist2 == "-":
+            del self.FileInFocus["TPE2"]
+        elif Artist2 != "":
             self.FileInFocus["TPE2"] = TPE2(encoding=3, text=Artist2)
 
         self.FileInFocus.save(os.path.join(self.Path, FileName), v2_version=3)
@@ -189,7 +195,7 @@ class MP3Modifier(tk.Frame):
         if Current == "Done!":
             return
         elif Current == "":
-            self.RunButton.config(text="Done. Load next.")
+            self.RunButton.config(text="Modify and load next")
         else:
             self.ModifyFile(Current)
 
