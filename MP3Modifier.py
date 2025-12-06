@@ -131,6 +131,7 @@ class MP3Modifier(tk.Frame):
                 self.Artist0, self.Title0 = FileName.split(Splitter, 1)
             else:
                 self.Title0 = FileName
+                self.Artist0 = FileName
 
             try:
                 self.FileInFocus = ID3(FileName)
